@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Railway Management System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f9;
+      color: #2d3748;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1a3c6e 0%, #2563a8 100%);
+      color: white;
+      padding: 0 30px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .header-icon {
+      width: 34px; height: 34px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .header-text h1 { font-size: 17px; font-weight: 700; }
+    .header-text p  { font-size: 11px; opacity: 0.65; margin-top: 1px; }
+
+    /* NAV */
+    nav {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      padding: 0 20px;
+      overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      padding: 0 15px;
+      height: 46px;
+      border: none; background: none; cursor: pointer;
+      font-size: 13px; font-weight: 500; color: #64748b;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      transition: color .15s;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+    }
+    nav button:hover  { color: #1a3c6e; }
+    nav button.active { color: #1a3c6e; font-weight: 700; border-bottom-color: #1a3c6e; }
+
+    /* PAGES */
+    .page { display: none; padding: 24px 28px; max-width: 1180px; margin: 0 auto; }
+    .page.active { display: block; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-box {
+      background: #fff; border-radius: 10px;
+      padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border-left: 4px solid #1a3c6e;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-box:nth-child(2) { border-left-color: #e67e22; }
+    .stat-box:nth-child(3) { border-left-color: #27ae60; }
+    .stat-box:nth-child(4) { border-left-color: #8e44ad; }
+    .stat-icon { font-size: 26px; }
+    .stat-num  { font-size: 28px; font-weight: 800; color: #1a3c6e; line-height: 1; }
+    .stat-box:nth-child(2) .stat-num { color: #e67e22; }
+    .stat-box:nth-child(3) .stat-num { color: #27ae60; }
+    .stat-box:nth-child(4) .stat-num { color: #8e44ad; }
+    .stat-lbl  { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+
+    /* CARD */
+    .card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .card-head {
+      background: linear-gradient(135deg, #1a3c6e 0%, #2563a8 100%);
+      color: white; padding: 12px 18px;
+      font-size: 13px; font-weight: 600;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-body { padding: 18px; }
+
+    /* FORM */
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 130px; }
+    .form-group label {
+      font-size: 11px; color: #64748b;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .form-group input,
+    .form-group select {
+      padding: 8px 10px;
+      border: 1.5px solid #e2e8f0; border-radius: 7px;
+      font-size: 13px; outline: none;
+      background: #f8fafc; color: #2d3748;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #2563a8;
+      box-shadow: 0 0 0 3px rgba(37,99,168,0.1);
+      background: #fff;
+    }
+    .form-group select { cursor: pointer; }
+    .fare-hint { font-size: 11px; color: #2563a8; opacity: 0.75; margin-top: 2px; }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    button.btn {
+      padding: 8px 20px; border: none; border-radius: 7px;
+      cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s;
+    }
+    .btn-blue { background: #1a3c6e; color: #fff; }
+    .btn-blue:hover  { background: #2563a8; box-shadow: 0 3px 10px rgba(26,60,110,0.25); }
+    .btn-grey { background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; }
+    .btn-grey:hover  { background: #e2e8f0; }
+    .btn-green { background: #27ae60; color: #fff; padding: 5px 13px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .btn-green:hover { background: #219150; }
+    .btn-red   { background: #e74c3c; color: #fff; padding: 5px 13px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .btn-red:hover   { background: #c0392b; }
+    .btn-orange { background: #e67e22; color: #fff; padding: 5px 13px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; transition: background .15s; }
+    .btn-orange:hover { background: #ca6f1e; }
+
+    /* TABLE */
+    .table-card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden;
+    }
+    .table-toolbar {
+      padding: 11px 14px; display: flex; gap: 8px;
+      background: #f8fafc; border-bottom: 1px solid #f0f4f9;
+    }
+    .table-toolbar input {
+      flex: 1; padding: 7px 12px;
+      border: 1.5px solid #e2e8f0; border-radius: 6px;
+      font-size: 13px; outline: none; background: #fff; color: #2d3748;
+    }
+    .table-toolbar input:focus { border-color: #2563a8; }
+    .refresh-btn {
+      background: #fff; border: 1.5px solid #e2e8f0;
+      border-radius: 6px; padding: 7px 14px;
+      cursor: pointer; font-size: 13px; color: #64748b; font-weight: 500;
+      transition: all .15s;
+    }
+    .refresh-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f8fafc; }
+    th {
+      padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      border-bottom: 1px solid #f0f4f9; white-space: nowrap;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f8fafc; color: #374151;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #f8fafc; }
+    .empty-row td { text-align: center; color: #94a3b8; padding: 36px; font-size: 13px; }
+    .act-btns { display: flex; gap: 6px; }
+
+    /* BADGES */
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge-confirmed  { background: #d1fae5; color: #065f46; }
+    .badge-waitlisted { background: #fef3c7; color: #92400e; }
+    .badge-cancelled  { background: #fee2e2; color: #991b1b; }
+
+    /* STOP ORDER BADGE */
+    .stop-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #1a3c6e; color: #fff;
+      font-size: 12px; font-weight: 700;
+    }
+
+    /* MODE PILL */
+    .mode-pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+    .mode-insert { background: rgba(255,255,255,0.2); color: #fff; }
+    .mode-update { background: #fef3c7; color: #92400e; }
+
+    /* INFO / PREVIEW BOXES */
+    .info-box {
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      border-radius: 7px; padding: 9px 13px;
+      font-size: 12px; color: #1d4ed8; margin-bottom: 12px;
+    }
+    .sched-preview {
+      display: none;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 7px; padding: 9px 13px;
+      font-size: 12px; color: #166534; margin-bottom: 12px;
+    }
+
+    /* ROUTE VISUALIZER */
+    .route-view {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 8px; padding: 14px 18px; margin-bottom: 14px;
+    }
+    .route-view h4 { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .route-stops { display: flex; flex-wrap: wrap; gap: 0; align-items: center; }
+    .route-stop {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 8px; padding: 6px 12px;
+      font-size: 12px; font-weight: 600; color: #1a3c6e;
+    }
+    .route-stop .stop-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #1a3c6e; color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .route-arrow {
+      font-size: 14px; color: #94a3b8; padding: 0 4px;
+    }
+    .route-empty { font-size: 12px; color: #94a3b8; font-style: italic; }
+
+    .divider { height: 1px; background: #f0f4f9; margin: 14px 0; }
+
+    /* FILTER ROW for train routes */
+    .filter-row {
+      display: flex; gap: 10px; align-items: center;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .filter-row label { font-size: 12px; color: #64748b; font-weight: 600; white-space: nowrap; }
+    .filter-row select {
+      padding: 7px 10px; border: 1.5px solid #e2e8f0;
+      border-radius: 7px; font-size: 13px; outline: none;
+      background: #f8fafc; color: #2d3748; cursor: pointer;
+      transition: border-color .15s;
+    }
+    .filter-row select:focus { border-color: #2563a8; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 22px; right: 22px;
+      padding: 12px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      z-index: 9999; max-width: 340px; color: #fff;
+      align-items: center; gap: 8px;
+    }
+    #toast.show    { display: flex; animation: slideUp .2s ease; }
+    #toast.success { background: #059669; }
+    #toast.error   { background: #dc2626; }
+    #toast.info    { background: #2563a8; }
+    @keyframes slideUp { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    @media (max-width: 800px) {
+      .stats { grid-template-columns: repeat(2,1fr); }
+      .page  { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<header>
+  <div class="header-icon">🚂</div>
+  <div class="header-text">
+    <h1>Railway Management System</h1>
+    <p>Database Management Interface</p>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+  <button onclick="showPage('trains',this)">🚆 Trains</button>
+  <button onclick="showPage('passengers',this)">👤 Passengers</button>
+  <button onclick="showPage('reservations',this)">🎫 Reservations</button>
+  <button onclick="showPage('stations',this)">📍 Stations</button>
+  <button onclick="showPage('schedules',this)">🗓 Schedules</button>
+  <button onclick="showPage('routes',this)">🗺 Train Routes</button>
+  <button onclick="showPage('payments',this)">💳 Payments</button>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="stats">
+    <div class="stat-box"><div class="stat-icon">🚆</div><div><div class="stat-num" id="s-trains">—</div><div class="stat-lbl">Total Trains</div></div></div>
+    <div class="stat-box"><div class="stat-icon">👤</div><div><div class="stat-num" id="s-pass">—</div><div class="stat-lbl">Passengers</div></div></div>
+    <div class="stat-box"><div class="stat-icon">🎫</div><div><div class="stat-num" id="s-book">—</div><div class="stat-lbl">Reservations</div></div></div>
+    <div class="stat-box"><div class="stat-icon">💰</div><div><div class="stat-num" id="s-rev">—</div><div class="stat-lbl">Revenue (₹)</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-head">Recent Reservations</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Res. ID</th><th>Passenger</th><th>Train</th><th>Journey Date</th><th>Departure</th><th>Class</th><th>Fare (₹)</th><th>Status</th></tr></thead>
+        <tbody id="dash-body"><tr class="empty-row"><td colspan="8">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TRAINS -->
+<div class="page" id="page-trains">
+  <div class="card">
+    <div class="card-head">
+      Train Details
+      <span class="mode-pill mode-insert" id="train-mode">New Record</span>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>Train ID</label><input id="t-id" placeholder="e.g. T001"/></div>
+        <div class="form-group" style="flex:2"><label>Train Name</label><input id="t-name" placeholder="e.g. Chennai Express"/></div>
+        <div class="form-group"><label>Type</label>
+          <select id="t-type"><option>Express</option><option>Superfast</option><option>Passenger</option><option>Rajdhani</option><option>Shatabdi</option></select>
+        </div>
+        <div class="form-group"><label>Total Seats</label><input id="t-seats" type="number" placeholder="450"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="saveTrain()">💾 Save</button>
+        <button class="btn btn-grey" onclick="resetTrain()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search trains…" oninput="filterTable('train-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadTrains()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Train ID</th><th>Train Name</th><th>Type</th><th>Seats</th><th>Actions</th></tr></thead>
+        <tbody id="train-body"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PASSENGERS -->
+<div class="page" id="page-passengers">
+  <div class="card">
+    <div class="card-head">
+      Passenger Details
+      <span class="mode-pill mode-insert" id="pass-mode">New Record</span>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>Passenger ID</label><input id="p-id" placeholder="e.g. P001"/></div>
+        <div class="form-group" style="flex:2"><label>Full Name</label><input id="p-name" placeholder="e.g. Rahul Mehta"/></div>
+        <div class="form-group"><label>Age</label><input id="p-age" type="number" placeholder="28"/></div>
+        <div class="form-group"><label>Gender</label><select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input id="p-phone" placeholder="9876543210"/></div>
+        <div class="form-group" style="flex:2"><label>Email</label><input id="p-email" type="email" placeholder="name@email.com"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="savePassenger()">💾 Save</button>
+        <button class="btn btn-grey" onclick="resetPassenger()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search passengers…" oninput="filterTable('pass-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadPassengers()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+        <tbody id="pass-body"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- RESERVATIONS -->
+<div class="page" id="page-reservations">
+  <div class="card">
+    <div class="card-head">
+      Reservation Details
+      <span class="mode-pill mode-insert" id="res-mode">New Record</span>
+    </div>
+    <div class="card-body">
+      <div class="info-box">ℹ️ Select a Schedule — train and journey date fill automatically. Set seat, class and fare below.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Reservation ID</label><input id="r-id" placeholder="e.g. R001"/></div>
+        <div class="form-group"><label>Passenger ID</label><input id="r-pid" placeholder="e.g. P001"/></div>
+        <div class="form-group" style="flex:2"><label>Schedule</label>
+          <select id="r-sid" onchange="onScheduleChange()"><option value="">— Select a schedule —</option></select>
+        </div>
+        <div class="form-group"><label>Reservation Date</label><input id="r-date" type="date"/></div>
+        <div class="form-group"><label>Status</label>
+          <select id="r-status"><option>Confirmed</option><option>Waitlisted</option><option>Cancelled</option></select>
+        </div>
+      </div>
+      <div class="sched-preview" id="schedule-preview">✅ <span id="preview-text"></span></div>
+      <div class="divider"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Seat No.</label><input id="r-seat" placeholder="e.g. A1"/></div>
+        <div class="form-group">
+          <label>Class</label>
+          <select id="r-class" onchange="updateFareHint()">
+            <option value="Sleeper">Sleeper</option>
+            <option value="AC 3 Tier">AC 3 Tier</option>
+            <option value="AC 2 Tier">AC 2 Tier</option>
+            <option value="AC 1st Class">AC 1st Class</option>
+            <option value="General">General</option>
+          </select>
+          <span class="fare-hint" id="fare-hint">Suggested: ₹200 – ₹600</span>
+        </div>
+        <div class="form-group"><label>Fare (₹)</label><input id="r-fare" type="number" placeholder="e.g. 450" min="0"/></div>
+        <div class="form-group"><label>Payment Mode</label>
+          <select id="r-paymode"><option value="UPI">UPI</option><option value="Card">Card</option><option value="Cash">Cash</option><option value="Net Banking">Net Banking</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="saveReservation()">💾 Save</button>
+        <button class="btn btn-grey" onclick="resetReservation()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search reservations…" oninput="filterTable('res-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadReservations()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Res. ID</th><th>Passenger</th><th>Train</th><th>Journey Date</th><th>Dep. Time</th><th>Seat</th><th>Class</th><th>Fare (₹)</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="res-body"><tr class="empty-row"><td colspan="10">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- STATIONS -->
+<div class="page" id="page-stations">
+  <div class="card">
+    <div class="card-head">Add New Station</div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>Station ID</label><input id="st-id" placeholder="e.g. ST001"/></div>
+        <div class="form-group" style="flex:2"><label>Station Name</label><input id="st-name" placeholder="e.g. Chennai Central"/></div>
+        <div class="form-group"><label>Station Code</label><input id="st-code" placeholder="e.g. MAS"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="addStation()">➕ Add Station</button>
+        <button class="btn btn-grey" onclick="clearStation()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search stations…" oninput="filterTable('station-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadStations()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Station ID</th><th>Station Name</th><th>Code</th><th>Actions</th></tr></thead>
+        <tbody id="station-body"><tr class="empty-row"><td colspan="4">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULES -->
+<div class="page" id="page-schedules">
+  <div class="card">
+    <div class="card-head">Add New Schedule</div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>Schedule ID</label><input id="sc-id" placeholder="e.g. SC001"/></div>
+        <div class="form-group" style="flex:2"><label>Train</label><select id="sc-train"><option value="">— Select Train —</option></select></div>
+        <div class="form-group"><label>Journey Date</label><input id="sc-date" type="date"/></div>
+        <div class="form-group"><label>Departure Time</label><input id="sc-dep" type="time"/></div>
+        <div class="form-group"><label>Arrival Time</label><input id="sc-arr" type="time"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="addSchedule()">➕ Add Schedule</button>
+        <button class="btn btn-grey" onclick="clearSchedule()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search schedules…" oninput="filterTable('sched-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadSchedules()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Schedule ID</th><th>Train</th><th>Journey Date</th><th>Departure</th><th>Arrival</th><th>Actions</th></tr></thead>
+        <tbody id="sched-body"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TRAIN ROUTES -->
+<div class="page" id="page-routes">
+  <!-- Add Stop Form -->
+  <div class="card">
+    <div class="card-head">
+      Train Routes
+      <span class="mode-pill mode-insert" id="route-mode">Add Stop</span>
+    </div>
+    <div class="card-body">
+      <div class="info-box">ℹ️ Assign stations to trains in order. Set Stop Order, Arrival and Departure times for each stop.</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Train</label>
+          <select id="rt-train" onchange="renderRoutePreview()">
+            <option value="">— Select Train —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Station</label>
+          <select id="rt-station">
+            <option value="">— Select Station —</option>
+          </select>
+        </div>
+        <div class="form-group" style="max-width:100px">
+          <label>Stop Order</label>
+          <input id="rt-order" type="number" placeholder="1" min="1"/>
+        </div>
+        <div class="form-group">
+          <label>Arrival Time</label>
+          <input id="rt-arr" type="time"/>
+        </div>
+        <div class="form-group">
+          <label>Departure Time</label>
+          <input id="rt-dep" type="time"/>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="saveRouteStop()">💾 Save Stop</button>
+        <button class="btn btn-grey" onclick="resetRoute()">✕ Clear</button>
+      </div>
+
+      <!-- Route visual preview for selected train -->
+      <div id="route-preview-box" style="display:none; margin-top:16px;">
+        <div class="route-view">
+          <h4>📍 Current Route for <span id="route-train-name">—</span></h4>
+          <div class="route-stops" id="route-stops-visual"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter + Table -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search routes…" oninput="filterTable('route-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadRoutes()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Stop</th><th>Train</th><th>Station</th><th>Code</th>
+            <th>Arrival</th><th>Departure</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="route-body"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="page" id="page-payments">
+  <div class="table-card">
+    <div class="table-toolbar">
+      <input placeholder="🔍 Search payments…" oninput="filterTable('pay-body',this.value)"/>
+      <button class="refresh-btn" onclick="loadPayments()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Payment ID</th><th>Reservation ID</th><th>Date</th><th>Mode</th><th>Amount (₹)</th></tr></thead>
+        <tbody id="pay-body"><tr class="empty-row"><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = "http://127.0.0.1:5000";
+  let trainEditId=null, passEditId=null, resEditId=null;
+  let routeEditKey=null; // {train_id, station_id}
+  let schedulesCache=[], routesCache=[];
+
+  const fareHints = {
+    'Sleeper':'₹200 – ₹600','AC 3 Tier':'₹500 – ₹1200',
+    'AC 2 Tier':'₹900 – ₹2000','AC 1st Class':'₹1500 – ₹4000','General':'₹50 – ₹200'
+  };
+  function updateFareHint(){
+    const c=document.getElementById('r-class').value;
+    document.getElementById('fare-hint').textContent='Suggested: '+(fareHints[c]||'');
+  }
+
+  function showPage(name, btn){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.getElementById('page-'+name).classList.add('active');
+    btn.classList.add('active');
+    if(name==='dashboard')    { loadStats(); loadDashReservations(); }
+    if(name==='trains')       loadTrains();
+    if(name==='passengers')   loadPassengers();
+    if(name==='reservations') { loadReservations(); loadScheduleDropdown(); }
+    if(name==='stations')     loadStations();
+    if(name==='schedules')    { loadSchedules(); loadTrainDropdown('sc-train'); }
+    if(name==='routes')       { loadRoutes(); loadTrainDropdown('rt-train'); loadStationDropdown(); }
+    if(name==='payments')     loadPayments();
+  }
+
+  function toast(msg, type='success'){
+    const icons={success:'✅',error:'❌',info:'ℹ️'};
+    const t=document.getElementById('toast');
+    t.innerHTML=`<span>${icons[type]||''}</span> ${msg}`;
+    t.className='show '+type;
+    setTimeout(()=>t.className='',3500);
+  }
+
+  async function api(method, path, body){
+    try{
+      const res=await fetch(BASE+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+      const data=await res.json();
+      if(data.error){toast(data.error,'error');return null;}
+      return data;
+    }catch{ toast('Cannot connect to Flask. Run: python app.py','error'); return null; }
+  }
+
+  function filterTable(id, q){
+    document.getElementById(id).querySelectorAll('tr').forEach(r=>{
+      r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+    });
+  }
+
+  function fmtDate(v){
+    if(!v) return '—';
+    const [y,m,d] = String(v).split('T')[0].split('-');
+    if(!y||!m||!d) return v;
+    const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${parseInt(d)} ${mo[parseInt(m)-1]} ${y}`;
+  }
+
+  function badge(s){
+    if(!s) return '—';
+    const c={Confirmed:'confirmed',Waitlisted:'waitlisted',Cancelled:'cancelled'};
+    return `<span class="badge badge-${c[s]||'confirmed'}">${s}</span>`;
+  }
+
+  // ════ DASHBOARD ════
+  async function loadStats(){
+    const d=await api('GET','/api/stats'); if(!d) return;
+    document.getElementById('s-trains').textContent=d.trains;
+    document.getElementById('s-pass').textContent=d.passengers;
+    document.getElementById('s-book').textContent=d.bookings;
+    document.getElementById('s-rev').textContent='₹'+Number(d.revenue).toLocaleString('en-IN');
+  }
+  async function loadDashReservations(){
+    const data=await api('GET','/api/bookings');
+    const tb=document.getElementById('dash-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="8">No reservations found.</td></tr>';return;}
+    tb.innerHTML=data.slice(0,10).map(b=>`<tr>
+      <td><strong>${b.booking_id}</strong></td>
+      <td>${b.passenger_name||'—'}</td><td>${b.train_name||'—'}</td>
+      <td>${fmtDate(b.journey_date)}</td><td>${b.departure_time||'—'}</td>
+      <td>${b.class_type||'—'}</td>
+      <td>${b.fare?'₹'+Number(b.fare).toLocaleString('en-IN'):'—'}</td>
+      <td>${badge(b.status)}</td></tr>`).join('');
+  }
+
+  // ════ TRAINS ════
+  async function loadTrains(){
+    const data=await api('GET','/api/trains');
+    const tb=document.getElementById('train-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="5">No trains found.</td></tr>';return;}
+    tb.innerHTML=data.map(t=>`<tr>
+      <td><strong>${t.train_id}</strong></td>
+      <td>${t.train_name}</td><td>${t.train_type}</td><td>${t.total_seats}</td>
+      <td><div class="act-btns">
+        <button class="btn-green" onclick='editTrain(${JSON.stringify(t)})'>✏ Edit</button>
+        <button class="btn-red"   onclick="deleteTrain('${t.train_id}')">🗑 Delete</button>
+      </div></td></tr>`).join('');
+  }
+  function editTrain(t){
+    trainEditId=t.train_id;
+    document.getElementById('t-id').value=t.train_id;
+    document.getElementById('t-name').value=t.train_name;
+    document.getElementById('t-type').value=t.train_type;
+    document.getElementById('t-seats').value=t.total_seats;
+    document.getElementById('t-id').disabled=true;
+    document.getElementById('train-mode').textContent='Editing';
+    document.getElementById('train-mode').className='mode-pill mode-update';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  async function saveTrain(){
+    const body={train_id:document.getElementById('t-id').value.trim(),train_name:document.getElementById('t-name').value.trim(),train_type:document.getElementById('t-type').value,total_seats:parseInt(document.getElementById('t-seats').value)};
+    if(!body.train_id||!body.train_name){toast('Train ID and Name are required.','error');return;}
+    const res=trainEditId?await api('PUT','/api/trains/'+trainEditId,body):await api('POST','/api/trains',body);
+    if(res){toast(trainEditId?'Train updated!':'Train added!');resetTrain();loadTrains();}
+  }
+  async function deleteTrain(id){
+    if(!confirm('Delete train '+id+'?'))return;
+    const res=await api('DELETE','/api/trains/'+id);
+    if(res){toast('Train deleted.');loadTrains();}
+  }
+  function resetTrain(){
+    trainEditId=null;
+    ['t-id','t-name','t-seats'].forEach(id=>{document.getElementById(id).value='';document.getElementById(id).disabled=false;});
+    document.getElementById('train-mode').textContent='New Record';
+    document.getElementById('train-mode').className='mode-pill mode-insert';
+  }
+
+  // ════ PASSENGERS ════
+  async function loadPassengers(){
+    const data=await api('GET','/api/passengers');
+    const tb=document.getElementById('pass-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="7">No passengers found.</td></tr>';return;}
+    tb.innerHTML=data.map(p=>`<tr>
+      <td><strong>${p.passenger_id}</strong></td>
+      <td>${p.name}</td><td>${p.age}</td><td>${p.gender}</td>
+      <td>${p.phone||'—'}</td><td>${p.email||'—'}</td>
+      <td><div class="act-btns">
+        <button class="btn-green" onclick='editPassenger(${JSON.stringify(p)})'>✏ Edit</button>
+        <button class="btn-red"   onclick="deletePassenger('${p.passenger_id}')">🗑 Delete</button>
+      </div></td></tr>`).join('');
+  }
+  function editPassenger(p){
+    passEditId=p.passenger_id;
+    document.getElementById('p-id').value=p.passenger_id;
+    document.getElementById('p-name').value=p.name;
+    document.getElementById('p-age').value=p.age;
+    document.getElementById('p-gender').value=p.gender;
+    document.getElementById('p-phone').value=p.phone||'';
+    document.getElementById('p-email').value=p.email||'';
+    document.getElementById('p-id').disabled=true;
+    document.getElementById('pass-mode').textContent='Editing';
+    document.getElementById('pass-mode').className='mode-pill mode-update';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  async function savePassenger(){
+    const body={passenger_id:document.getElementById('p-id').value.trim(),name:document.getElementById('p-name').value.trim(),age:parseInt(document.getElementById('p-age').value),gender:document.getElementById('p-gender').value,phone:document.getElementById('p-phone').value.trim(),email:document.getElementById('p-email').value.trim()};
+    if(!body.passenger_id||!body.name){toast('Passenger ID and Name are required.','error');return;}
+    const res=passEditId?await api('PUT','/api/passengers/'+passEditId,body):await api('POST','/api/passengers',body);
+    if(res){toast(passEditId?'Passenger updated!':'Passenger added!');resetPassenger();loadPassengers();}
+  }
+  async function deletePassenger(id){
+    if(!confirm('Delete passenger '+id+'?'))return;
+    const res=await api('DELETE','/api/passengers/'+id);
+    if(res){toast('Passenger deleted.');loadPassengers();}
+  }
+  function resetPassenger(){
+    passEditId=null;
+    ['p-id','p-name','p-age','p-phone','p-email'].forEach(id=>{document.getElementById(id).value='';document.getElementById(id).disabled=false;});
+    document.getElementById('pass-mode').textContent='New Record';
+    document.getElementById('pass-mode').className='mode-pill mode-insert';
+  }
+
+  // ════ SHARED DROPDOWNS ════
+  async function loadTrainDropdown(selId){
+    const data=await api('GET','/api/trains'); if(!data) return;
+    const sel=document.getElementById(selId);
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Select Train —</option>';
+    data.forEach(t=>{const o=document.createElement('option');o.value=t.train_id;o.textContent=`${t.train_id} — ${t.train_name}`;sel.appendChild(o);});
+    if(cur) sel.value=cur;
+  }
+  async function loadStationDropdown(){
+    const data=await api('GET','/api/stations'); if(!data) return;
+    const sel=document.getElementById('rt-station');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Select Station —</option>';
+    data.forEach(s=>{const o=document.createElement('option');o.value=s.station_id;o.textContent=`${s.station_name} (${s.station_code||s.station_id})`;sel.appendChild(o);});
+    if(cur) sel.value=cur;
+  }
+
+  // ════ SCHEDULE DROPDOWN ════
+  async function loadScheduleDropdown(){
+    const data=await api('GET','/api/schedules'); if(!data) return;
+    schedulesCache=data;
+    const sel=document.getElementById('r-sid');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Select a schedule —</option>';
+    data.forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s.schedule_id;
+      o.textContent=`${s.schedule_id} | ${s.train_name||s.train_id} | ${fmtDate(s.journey_date)} | Dep: ${s.departure_time}`;
+      sel.appendChild(o);
+    });
+    if(cur) sel.value=cur;
+  }
+  function onScheduleChange(){
+    const sid=document.getElementById('r-sid').value;
+    const prev=document.getElementById('schedule-preview');
+    const txt=document.getElementById('preview-text');
+    if(!sid){prev.style.display='none';return;}
+    const s=schedulesCache.find(x=>String(x.schedule_id)===String(sid));
+    if(s){
+      txt.textContent=` Train ${s.train_name||s.train_id} · ${fmtDate(s.journey_date)} · Dep: ${s.departure_time} · Arr: ${s.arrival_time}`;
+      prev.style.display='block';
+    }
+  }
+
+  // ════ RESERVATIONS ════
+  async function loadReservations(){
+    const data=await api('GET','/api/bookings');
+    const tb=document.getElementById('res-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="10">No reservations found.</td></tr>';return;}
+    tb.innerHTML=data.map(b=>`<tr>
+      <td><strong>${b.booking_id}</strong></td>
+      <td>${b.passenger_name||'—'}</td><td>${b.train_name||'—'}</td>
+      <td>${fmtDate(b.journey_date)}</td><td>${b.departure_time||'—'}</td>
+      <td>${b.seat_number||'—'}</td><td>${b.class_type||'—'}</td>
+      <td>${b.fare?'₹'+Number(b.fare).toLocaleString('en-IN'):'—'}</td>
+      <td>${badge(b.status)}</td>
+      <td><div class="act-btns">
+        <button class="btn-green" onclick='editReservation(${JSON.stringify(b)})'>✏ Edit</button>
+        <button class="btn-red"   onclick="deleteReservation('${b.booking_id}')">🗑 Delete</button>
+      </div></td></tr>`).join('');
+  }
+  function editReservation(b){
+    resEditId=b.booking_id;
+    document.getElementById('r-id').value=b.booking_id;
+    document.getElementById('r-pid').value=b.passenger_id;
+    document.getElementById('r-sid').value=b.schedule_id||'';
+    document.getElementById('r-status').value=b.status;
+    document.getElementById('r-date').value=b.booking_date?String(b.booking_date).split('T')[0]:'';
+    document.getElementById('r-seat').value=b.seat_number||'';
+    document.getElementById('r-class').value=b.class_type||'Sleeper';
+    document.getElementById('r-fare').value=b.fare||'';
+    document.getElementById('r-id').disabled=true;
+    document.getElementById('res-mode').textContent='Editing';
+    document.getElementById('res-mode').className='mode-pill mode-update';
+    updateFareHint(); onScheduleChange();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  async function saveReservation(){
+    const body={
+      booking_id:document.getElementById('r-id').value.trim(),
+      passenger_id:document.getElementById('r-pid').value.trim(),
+      schedule_id:document.getElementById('r-sid').value.trim(),
+      booking_date:document.getElementById('r-date').value,
+      status:document.getElementById('r-status').value,
+      seat_no:document.getElementById('r-seat').value.trim(),
+      class_type:document.getElementById('r-class').value,
+      fare:parseFloat(document.getElementById('r-fare').value),
+      payment_mode:document.getElementById('r-paymode').value
+    };
+    if(!body.booking_id||!body.passenger_id){toast('Reservation ID and Passenger ID are required.','error');return;}
+    if(!resEditId&&!body.schedule_id){toast('Please select a Schedule.','error');return;}
+    if(!resEditId&&(!body.seat_no||!body.fare||isNaN(body.fare))){toast('Seat No. and Fare are required.','error');return;}
+    const res=resEditId?await api('PUT','/api/bookings/'+resEditId,body):await api('POST','/api/bookings',body);
+    if(res){toast(resEditId?'Reservation updated!':'Reservation added!');resetReservation();loadReservations();}
+  }
+  async function deleteReservation(id){
+    if(!confirm('Delete reservation '+id+'?'))return;
+    const res=await api('DELETE','/api/bookings/'+id);
+    if(res){toast('Reservation deleted.');loadReservations();}
+  }
+  function resetReservation(){
+    resEditId=null;
+    ['r-id','r-pid','r-date','r-seat','r-fare'].forEach(id=>{document.getElementById(id).value='';document.getElementById(id).disabled=false;});
+    document.getElementById('r-sid').value='';
+    document.getElementById('r-class').value='Sleeper';
+    document.getElementById('r-id').disabled=false;
+    document.getElementById('schedule-preview').style.display='none';
+    document.getElementById('res-mode').textContent='New Record';
+    document.getElementById('res-mode').className='mode-pill mode-insert';
+    updateFareHint();
+  }
+
+  // ════ STATIONS ════
+  async function loadStations(){
+    const data=await api('GET','/api/stations');
+    const tb=document.getElementById('station-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="4">No stations found.</td></tr>';return;}
+    tb.innerHTML=data.map(s=>`<tr>
+      <td><strong>${s.station_id}</strong></td>
+      <td>${s.station_name}</td><td>${s.station_code||'—'}</td>
+      <td><button class="btn-red" onclick="deleteStation('${s.station_id}')">🗑 Delete</button></td>
+    </tr>`).join('');
+  }
+  async function addStation(){
+    const body={station_id:document.getElementById('st-id').value.trim(),station_name:document.getElementById('st-name').value.trim(),station_code:document.getElementById('st-code').value.trim()};
+    if(!body.station_id||!body.station_name){toast('Station ID and Name are required.','error');return;}
+    const res=await api('POST','/api/stations',body);
+    if(res){toast('Station added!');clearStation();loadStations();}
+  }
+  async function deleteStation(id){
+    if(!confirm('Delete station '+id+'?'))return;
+    const res=await api('DELETE','/api/stations/'+id);
+    if(res){toast('Station deleted.');loadStations();}
+  }
+  function clearStation(){['st-id','st-name','st-code'].forEach(id=>document.getElementById(id).value='');}
+
+  // ════ SCHEDULES ════
+  async function loadSchedules(){
+    const data=await api('GET','/api/schedules');
+    const tb=document.getElementById('sched-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="6">No schedules found.</td></tr>';return;}
+    tb.innerHTML=data.map(s=>`<tr>
+      <td><strong>${s.schedule_id}</strong></td>
+      <td>${s.train_name||s.train_id}</td>
+      <td>${fmtDate(s.journey_date)}</td>
+      <td>${s.departure_time||'—'}</td><td>${s.arrival_time||'—'}</td>
+      <td><button class="btn-red" onclick="deleteSchedule('${s.schedule_id}')">🗑 Delete</button></td>
+    </tr>`).join('');
+  }
+  async function addSchedule(){
+    const body={schedule_id:document.getElementById('sc-id').value.trim(),train_id:document.getElementById('sc-train').value,journey_date:document.getElementById('sc-date').value,departure_time:document.getElementById('sc-dep').value,arrival_time:document.getElementById('sc-arr').value};
+    if(!body.schedule_id||!body.train_id||!body.journey_date){toast('Schedule ID, Train and Journey Date are required.','error');return;}
+    const res=await api('POST','/api/schedules',body);
+    if(res){toast('Schedule added!');clearSchedule();loadSchedules();}
+  }
+  async function deleteSchedule(id){
+    if(!confirm('Delete schedule '+id+'?\nLinked reservations will also be removed.'))return;
+    const res=await api('DELETE','/api/schedules/'+id);
+    if(res){toast('Schedule deleted.');loadSchedules();}
+  }
+  function clearSchedule(){['sc-id','sc-date','sc-dep','sc-arr'].forEach(id=>document.getElementById(id).value='');document.getElementById('sc-train').value='';}
+
+  // ════ TRAIN ROUTES ════
+  async function loadRoutes(){
+    const data=await api('GET','/api/train_stations');
+    routesCache = data || [];
+    const tb=document.getElementById('route-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="7">No route stops found.</td></tr>';return;}
+    tb.innerHTML=data.map(r=>`<tr>
+      <td><span class="stop-badge">${r.stop_order||'?'}</span></td>
+      <td><strong>${r.train_name||r.train_id}</strong></td>
+      <td>${r.station_name||r.station_id}</td>
+      <td>${r.station_code||'—'}</td>
+      <td>${r.arrival_time||'—'}</td>
+      <td>${r.departure_time||'—'}</td>
+      <td><div class="act-btns">
+        <button class="btn-orange" onclick='editRouteStop(${JSON.stringify(r)})'>✏ Edit</button>
+        <button class="btn-red"    onclick="deleteRouteStop('${r.train_id}','${r.station_id}')">🗑 Del</button>
+      </div></td></tr>`).join('');
+  }
+
+  function renderRoutePreview(){
+    const trainId = document.getElementById('rt-train').value;
+    const box = document.getElementById('route-preview-box');
+    const visual = document.getElementById('route-stops-visual');
+    const nameEl = document.getElementById('route-train-name');
+    if(!trainId || !routesCache.length){ box.style.display='none'; return; }
+
+    const stops = routesCache
+      .filter(r=>String(r.train_id)===String(trainId))
+      .sort((a,b)=>(a.stop_order||0)-(b.stop_order||0));
+
+    // Get train name from first match
+    const trainName = stops.length ? stops[0].train_name : trainId;
+    nameEl.textContent = trainName;
+
+    if(!stops.length){
+      visual.innerHTML='<span class="route-empty">No stops added yet for this train.</span>';
+      box.style.display='block'; return;
+    }
+
+    visual.innerHTML = stops.map((s,i) => `
+      ${i>0 ? '<span class="route-arrow">→</span>' : ''}
+      <div class="route-stop">
+        <span class="stop-num">${s.stop_order}</span>
+        ${s.station_name||s.station_id}
+        ${s.station_code ? `<span style="font-size:10px;color:#94a3b8">(${s.station_code})</span>` : ''}
+      </div>
+    `).join('');
+    box.style.display='block';
+  }
+
+  function editRouteStop(r){
+    routeEditKey = {train_id: r.train_id, station_id: r.station_id};
+    document.getElementById('rt-train').value   = r.train_id;
+    document.getElementById('rt-station').value = r.station_id;
+    document.getElementById('rt-order').value   = r.stop_order||'';
+    document.getElementById('rt-arr').value     = r.arrival_time||'';
+    document.getElementById('rt-dep').value     = r.departure_time||'';
+    document.getElementById('rt-train').disabled   = true;
+    document.getElementById('rt-station').disabled = true;
+    document.getElementById('route-mode').textContent = 'Editing';
+    document.getElementById('route-mode').className  = 'mode-pill mode-update';
+    renderRoutePreview();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  async function saveRouteStop(){
+    const trainId   = document.getElementById('rt-train').value;
+    const stationId = document.getElementById('rt-station').value;
+    const order     = document.getElementById('rt-order').value;
+    const arr       = document.getElementById('rt-arr').value;
+    const dep       = document.getElementById('rt-dep').value;
+
+    if(!trainId||!stationId||!order){
+      toast('Train, Station and Stop Order are required.','error'); return;
+    }
+    const body = {train_id:trainId, station_id:stationId, stop_order:parseInt(order), arrival_time:arr||null, departure_time:dep||null};
+
+    const res = routeEditKey
+      ? await api('PUT', `/api/train_stations/${routeEditKey.train_id}/${routeEditKey.station_id}`, body)
+      : await api('POST', '/api/train_stations', body);
+
+    if(res){
+      toast(routeEditKey ? 'Stop updated!' : 'Stop added!');
+      resetRoute(); await loadRoutes(); renderRoutePreview();
+    }
+  }
+
+  async function deleteRouteStop(trainId, stationId){
+    if(!confirm(`Remove station ${stationId} from train ${trainId}?`)) return;
+    const res=await api('DELETE',`/api/train_stations/${trainId}/${stationId}`);
+    if(res){toast('Stop removed.');loadRoutes();}
+  }
+
+  function resetRoute(){
+    routeEditKey=null;
+    ['rt-order','rt-arr','rt-dep'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('rt-train').disabled=false;
+    document.getElementById('rt-station').disabled=false;
+    document.getElementById('route-mode').textContent='Add Stop';
+    document.getElementById('route-mode').className='mode-pill mode-insert';
+  }
+
+  // ════ PAYMENTS ════
+  async function loadPayments(){
+    const data=await api('GET','/api/payments');
+    const tb=document.getElementById('pay-body');
+    if(!data||!data.length){tb.innerHTML='<tr class="empty-row"><td colspan="5">No payments found.</td></tr>';return;}
+    tb.innerHTML=data.map(p=>`<tr>
+      <td><strong>${p.payment_id}</strong></td>
+      <td>${p.reservation_id}</td>
+      <td>${fmtDate(p.payment_date)}</td>
+      <td>${p.payment_mode||'—'}</td>
+      <td>₹${Number(p.amount).toLocaleString('en-IN')}</td>
+    </tr>`).join('');
+  }
+
+  window.onload = () => { loadStats(); loadDashReservations(); };
+</script>
+</body>
+</html>
